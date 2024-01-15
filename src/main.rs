@@ -1,5 +1,5 @@
 use actix_web::{middleware, web, App, HttpRequest, HttpServer};
-use scylla::SessionBuilder;
+use tracing::instrument::WithSubscriber;
 
 async fn index(req: HttpRequest) -> &'static str {
     println!("REQ: {req:?}");
@@ -12,12 +12,15 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("starting HTTP server at http://localhost:8080");
 
-    let _session = SessionBuilder::new()
-        .known_node("192.168.1.2:9042")
-        .user("cassandra", "cassandra")
-        .build()
-        .await
-        .unwrap();
+    tokio::spawn(
+        async move {
+            tracing::info!("spawned info");
+            println!("spawned task");
+        }
+        .with_current_subscriber(),
+    )
+    .await
+    .unwrap();
 
     log::info!("more logs");
 
